@@ -94,6 +94,7 @@ static void list_free(node_t **list) {
 }
 
 int main(int argc, char **argv) {
+    srandom(time(NULL));
     size_t count = 20;
 
     node_t *list = NULL;
