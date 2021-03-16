@@ -99,8 +99,6 @@ static void quicksort_non_recursive(node_t **list)
         if (begin[i + 1] != end[i + 1] && begin[i + 1]->next != end[i + 1]) {
             i++;
         } else {
-            end[i]->next = begin[i + 1];
-
             /* `left` has only 0-1 nodes */
             while (begin[i] == end[i] || begin[i]->next == end[i]) {
                 if (i > 0)
