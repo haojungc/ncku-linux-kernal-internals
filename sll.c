@@ -8,6 +8,8 @@ typedef struct __node {
     struct __node *next;
 } node_t;
 
+static void list_display(node_t *list);
+
 static inline node_t *list_make_node_t(node_t *list, int value) {
     node_t *node = malloc(sizeof(node_t));
     if (node == NULL) {
@@ -57,6 +59,66 @@ static void quicksort(node_t **list)
     *list = result;
 }
 
+static void quicksort_non_recursive(node_t **list)
+{
+#define MAX_LEVELS 1000
+    node_t *begin[MAX_LEVELS], *end[MAX_LEVELS];
+
+    begin[0] = *list;
+    end[0] = NULL;
+    int i = 0;
+
+    while (i >= 0 && i < MAX_LEVELS - 1) {
+        /* Initializes pivot, left, and right */
+        node_t *pivot = begin[i];
+        int value = pivot->value;
+        node_t *ptr = pivot->next;
+        pivot->next = NULL;
+        node_t *left = NULL, *right = end[i];
+
+        /* Splits the current list into two sublists */
+        while (ptr != end[i]) {
+           node_t *n = ptr;
+           ptr = ptr->next;
+           list_add_node_t(n->value > value ? &right : &left, n);
+        }
+
+        node_t *result = NULL;
+        list_concat(&result, left);
+        list_concat(&result, pivot);
+        list_concat(&result, right);
+
+        /* Resets the beginning and ending nodes of the sublists.
+         * left: i; right: i + 1 */
+        begin[i] = result;
+        begin[i + 1] = right; /* right == pivot->next */
+        end[i + 1] = end[i];
+        end[i] = pivot;
+
+        /* `right` has only 0-1 nodes */
+        if (begin[i + 1] != end[i + 1] && begin[i + 1]->next != end[i + 1]) {
+            i++;
+        } else {
+            end[i]->next = begin[i + 1];
+
+            /* `left` has only 0-1 nodes */
+            while (begin[i] == end[i] || begin[i]->next == end[i]) {
+                if (i > 0)
+                    /* Concatenates the list on the LHS and `left` */
+                    end[i - 1]->next = begin[i];
+                else {
+                    *list = begin[i];
+                    return;
+                }
+                i--;
+            }
+        }
+    }
+    fprintf(stderr, "sorting failed, max level reached\n");
+    exit(EXIT_FAILURE);
+#undef MAX_LEVELS
+}
+
 static bool list_is_ordered(node_t *list) {
     bool first = true;
     int value;
@@ -102,7 +164,7 @@ int main(int argc, char **argv) {
         list = list_make_node_t(list, random() % 1024);
 
     list_display(list);
-    quicksort(&list);
+    quicksort_non_recursive(&list);
     list_display(list);
 
     if (!list_is_ordered(list))
